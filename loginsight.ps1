@@ -24,14 +24,17 @@ function New-LogInsightRole
     }
     Process
     {
+        $PrivilegeList = Get-VIPrivilege -Id @(
+            'Host.Config.AdvancedConfig'
+            'Host.Config.NetService'
+            'Host.Config.Network'
+            'Host.Config.Settings'
+            'System.Anonymous'
+            'System.Read'
+            'System.View'
+        )
         New-VIRole $LogInsight_Role
-        Set-VIRole $LogInsight_Role -AddPrivilege (Get-VIPrivilege -id  Host.Config.AdvancedConfig)
-        Set-VIRole $LogInsight_Role -AddPrivilege (Get-VIPrivilege -id  Host.Config.NetService)
-        Set-VIRole $LogInsight_Role -AddPrivilege (Get-VIPrivilege -id  Host.Config.Network)
-        Set-VIRole $LogInsight_Role -AddPrivilege (Get-VIPrivilege -id  Host.Config.Settings)
-        Set-VIRole $LogInsight_Role -AddPrivilege (Get-VIPrivilege -id  System.Anonymous)
-        Set-VIRole $LogInsight_Role -AddPrivilege (Get-VIPrivilege -id  System.Read)
-        Set-VIRole $LogInsight_Role -AddPrivilege (Get-VIPrivilege -id  System.View)
+        Set-VIRole $LogInsight_Role -AddPrivilege $PrivilegeList
 
         Get-VIRole $LogInsight_Role | Select Name,PrivilegeList
     }

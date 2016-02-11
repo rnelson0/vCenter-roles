@@ -24,12 +24,14 @@ function New-InfrastructureNavigatorRole
     }
     Process
     {
+        $PrivilegeList = Get-VIPrivilege -Id @(
+            'VirtualMachine.Interact.ConsoleInteract'
+            'VirtualMachine.Interact.GuestControl'
+        )
         New-VIRole $InfrastructureNavigator_Role
-        Set-VIRole $InfrastructureNavigator_Role -AddPrivilege (Get-VIPrivilege -id VirtualMachine.Interact.ConsoleInteract)                                                        
-        Set-VIRole $InfrastructureNavigator_Role -AddPrivilege (Get-VIPrivilege -id VirtualMachine.Interact.GuestControl)
-        Set-VIRole $InfrastructureNavigator_Role -AddPrivilege (Get-VIPrivilege -id VirtualMachine.Interact)
+        Set-VIRole $InfrastructureNavigator_Role -AddPrivilege $PrivilegeList                                                      
 
-        Get-VIRole $InfrastructureNavigator_Role | Select Name,PrivilegeList
+        Get-VIRole $InfrastructureNavigator_Role | Select Name, PrivilegeList
     }
     End
     {
