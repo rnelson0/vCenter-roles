@@ -5,3 +5,4 @@ Set up roles for common applications to access vCenter. Unless otherwise noted, 
 * vRealize Log Insight v3: `New-LogInsightRole`
 * vRealize Infrastructure Navigator: `New-InfrastructureNavigatorRole`
 * vRealize Operations Manager Registration: `New-OperationsManagerRegistrationRole`
+* vSphere Data Protection: `New-VDPRole`
