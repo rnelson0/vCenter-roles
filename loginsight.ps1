@@ -3,6 +3,8 @@
    Create a vCenter role for Log Insight
 .DESCRIPTION
    Create a vCenter role for Log Insight using the minimum permissions required
+   
+   Privileges documented at https://communities.vmware.com/people/cferber/blog/2015/11/19/minimum-vcenter-permissions-required-for-vrealize-operations-and-vrealize-loginsight
 .EXAMPLE
    New-LogInsightRole
 .EXAMPLE
