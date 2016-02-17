@@ -88,24 +88,27 @@
         }
 
         Write-Verbose -Message 'Check to see if the role exists'
-        if (Get-VIRole -Name $Name -ErrorAction SilentlyContinue) {throw 'Role already exists'}
+        if (Get-VIRole -Name $Name -ErrorAction SilentlyContinue) 
+        {
+            throw 'Role already exists'
+        }
 
         Write-Verbose -Message 'Read the JSON file'
         try
         {
-        $null = Test-Path $Permission
-        [array]$PermArray = Get-Content -Path $Permission -Raw | ConvertFrom-Json
+            $null = Test-Path $Permission
+            [array]$PermArray = Get-Content -Path $Permission -Raw | ConvertFrom-Json
         }
         catch
         {
-        throw $_
+            throw $_
         }
 
         Write-Verbose -Message 'Parse the permission array for IDs'
         $PermList = Get-VIPrivilege -Id $PermArray
 
         Write-Verbose -Message 'Create the role'
-        New-VIRole $Name | Set-VIRole -AddPrivilege $PermList
+        New-VIRole -Name $Name | Set-VIRole -AddPrivilege $PermList
 
     } # End of process
 } # End of function
