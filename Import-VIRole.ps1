@@ -115,7 +115,7 @@ function Import-VIRole
         {
             foreach ($_ in $MissingPerm)
             {
-            Write-Warning -Message "Permission named $(($_.Exception.Message.Split("'"))[1]) not found"
+                Write-Warning -Message "Permission named $(($_.Exception.Message.Split("'"))[1]) not found"
             }
         }
 
