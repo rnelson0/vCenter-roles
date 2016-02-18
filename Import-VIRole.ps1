@@ -1,10 +1,20 @@
-﻿function Import-VIRole
+﻿#requires -Version 3
+function Import-VIRole
 {
     <#  
             .SYNOPSIS
             Imports a vSphere role based on pre-defined configuration values
             .DESCRIPTION
             The Import-VIRole cmdlet is used to parse through a list of pre-defined permissions to create a new role. Often, this is to support a particular vendor's set of requirements for access into vSphere.
+            .PARAMETER Name
+            Name of the role. Only alpha and space characters are allowed.
+            .PARAMETER Permission
+            Path to the JSON file containing permissions
+            .PARAMETER vCenter
+            vCenter Server IP or FQDN
+            .EXAMPLE
+            Import-VIRole -Name Banana -Permission "C:\Banana.json" -vCenter VC1.FQDN
+            Creates a new role named Banana, using the permission list stored in Banana.json, and applies it to the VC1.FQDN vCenter Server
             .NOTES
             Written by Chris Wahl for community usage
             Twitter: @ChrisWahl
@@ -94,15 +104,8 @@
         }
 
         Write-Verbose -Message 'Read the JSON file'
-        try
-        {
-            $null = Test-Path $Permission
-            [array]$PermArray = Get-Content -Path $Permission -Raw | ConvertFrom-Json
-        }
-        catch
-        {
-            throw $_
-        }
+        $null = Test-Path $Permission
+        [array]$PermArray = Get-Content -Path $Permission -Raw | ConvertFrom-Json
 
         Write-Verbose -Message 'Parse the permission array for IDs'
         $PermList = Get-VIPrivilege -Id $PermArray
