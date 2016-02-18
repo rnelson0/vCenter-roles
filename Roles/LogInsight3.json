@@ -1,0 +1,9 @@
+﻿[
+    "Host.Config.AdvancedConfig",
+    "Host.Config.NetService",
+    "Host.Config.Network",
+    "Host.Config.Settings",
+    "System.Anonymous",
+    "System.Read",
+    "System.View",
+]
