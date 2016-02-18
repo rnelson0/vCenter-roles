@@ -108,7 +108,16 @@ function Import-VIRole
         [array]$PermArray = Get-Content -Path $Permission -Raw | ConvertFrom-Json
 
         Write-Verbose -Message 'Parse the permission array for IDs'
-        $PermList = Get-VIPrivilege -Id $PermArray
+        $PermList = Get-VIPrivilege -Id $PermArray -ErrorVariable MissingPerm -ErrorAction SilentlyContinue
+
+        Write-Verbose -Message 'Checking for missing permissions in vCenter'
+        if ($MissingPerm)
+        {
+            foreach ($_ in $MissingPerm)
+            {
+            Write-Warning -Message "Permission named $(($_.Exception.Message.Split("'"))[1]) not found"
+            }
+        }
 
         Write-Verbose -Message 'Create the role'
         New-VIRole -Name $Name | Set-VIRole -AddPrivilege $PermList
