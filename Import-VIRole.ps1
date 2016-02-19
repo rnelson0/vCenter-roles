@@ -32,6 +32,9 @@ function Import-VIRole
         [Parameter(Mandatory = $true,Position = 1,HelpMessage = 'Path to the JSON file containing permissions')]
         [ValidateNotNullorEmpty()]
         [String]$Permission,
+        [Parameter(Mandatory = $true,Position = 1,HelpMessage = 'Overwrites existing Role by same name')]
+        [ValidateNotNullorEmpty()]
+        [Boolean]$Overwrite=$false,
         [Parameter(Mandatory = $true,Position = 2,HelpMessage = 'vCenter Server IP or FQDN')]
         [ValidateNotNullorEmpty()]
         [String]$vCenter
@@ -98,7 +101,7 @@ function Import-VIRole
         }
 
         Write-Verbose -Message 'Check to see if the role exists'
-        if (Get-VIRole -Name $Name -ErrorAction SilentlyContinue) 
+        if (Get-VIRole -Name $Name -ErrorAction SilentlyContinue -and $Overwrite -eq $False) 
         {
             throw 'Role already exists'
         }
