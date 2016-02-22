@@ -32,12 +32,12 @@ function Import-VIRole
         [Parameter(Mandatory = $true,Position = 1,HelpMessage = 'Path to the JSON file containing permissions')]
         [ValidateNotNullorEmpty()]
         [String]$Permission,
-        [Parameter(Mandatory = $true,Position = 1,HelpMessage = 'Overwrites existing Role by same name')]
-        [ValidateNotNullorEmpty()]
-        [Boolean]$Overwrite=$false,
         [Parameter(Mandatory = $true,Position = 2,HelpMessage = 'vCenter Server IP or FQDN')]
         [ValidateNotNullorEmpty()]
-        [String]$vCenter
+        [String]$vCenter,
+        [Parameter(Mandatory = $true,Position = 3,HelpMessage = 'Overwrites existing Role by same name')]
+        [ValidateNotNullorEmpty()]
+        [Boolean]$Overwrite=$false
     )
 
     Process {
