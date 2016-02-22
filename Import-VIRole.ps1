@@ -105,6 +105,7 @@ function Import-VIRole
         {
             throw 'Role already exists'
         }
+	
 	Write-Verbose -Message 'Read the JSON file'
         $null = Test-Path $Permission
         [array]$PermArray = Get-Content -Path $Permission -Raw | ConvertFrom-Json
@@ -122,11 +123,13 @@ function Import-VIRole
         }
 	if (!$Overwrite)
 	{
+        
         Write-Verbose -Message 'Create the role'
         New-VIRole -Name $Name | Set-VIRole -AddPrivilege $PermList
 	}
 	if (Get-VIRole -Name $Name -ErrorAction SilentlyContinue -and $OverWrite) 
 	{
+	
 	Write-Verbose -Message 'Overwriting role'
 	Get-VIRole -Name $Name | Set-VIRole -RemovePrivilege (Get-VIPrivilege $_)
 	Get-VIRoleSet-VIRole -AddPrivilege $PermList
