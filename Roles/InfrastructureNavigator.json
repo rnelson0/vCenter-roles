@@ -1,4 +1,4 @@
 ﻿[
     'VirtualMachine.Interact.ConsoleInteract',
-    'VirtualMachine.Interact.GuestControl',
+    'VirtualMachine.Interact.GuestControl'
 ]

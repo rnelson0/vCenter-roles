@@ -2,5 +2,5 @@
     "Extension.Register",
     "Extension.Unregister",
     "Extension.Update",
-    "Global.Licenses",
+    "Global.Licenses"
 ]
