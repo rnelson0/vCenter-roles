@@ -34,7 +34,10 @@ function Import-VIRole
         [String]$Permission,
         [Parameter(Mandatory = $true,Position = 2,HelpMessage = 'vCenter Server IP or FQDN')]
         [ValidateNotNullorEmpty()]
-        [String]$vCenter
+        [String]$vCenter,
+        [Parameter(Mandatory = $true,Position = 3,HelpMessage = 'Overwrites existing Role by same name')]
+        [ValidateNotNullorEmpty()]
+        [Boolean]$Overwrite=$false
     )
 
     Process {
@@ -98,12 +101,12 @@ function Import-VIRole
         }
 
         Write-Verbose -Message 'Check to see if the role exists'
-        if (Get-VIRole -Name $Name -ErrorAction SilentlyContinue) 
+        if (Get-VIRole -Name $Name -ErrorAction SilentlyContinue -and $Overwrite -eq $False) 
         {
             throw 'Role already exists'
         }
-
-        Write-Verbose -Message 'Read the JSON file'
+	
+	Write-Verbose -Message 'Read the JSON file'
         $null = Test-Path $Permission
         [array]$PermArray = Get-Content -Path $Permission -Raw | ConvertFrom-Json
 
@@ -118,9 +121,18 @@ function Import-VIRole
                 Write-Warning -Message "Permission named $(($_.Exception.Message.Split("'"))[1]) not found"
             }
         }
-
+	if (!$Overwrite)
+	{
+        
         Write-Verbose -Message 'Create the role'
         New-VIRole -Name $Name | Set-VIRole -AddPrivilege $PermList
-
+	}
+	if (Get-VIRole -Name $Name -ErrorAction SilentlyContinue -and $OverWrite) 
+	{
+	
+	Write-Verbose -Message 'Overwriting role'
+	Get-VIRole -Name $Name | Set-VIRole -RemovePrivilege (Get-VIPrivilege $_)
+	Get-VIRoleSet-VIRole -AddPrivilege $PermList
+	}
     } # End of process
 } # End of function
