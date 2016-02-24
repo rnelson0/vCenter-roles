@@ -81,5 +81,5 @@
     "EAM.Modify",
     "AutoDeploy.Profile.Create",
     "AutoDeploy.Rule.Create",
-    "VcIntegrity.General",
+    "VcIntegrity.General"
 ]
