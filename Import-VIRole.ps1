@@ -5,7 +5,7 @@ function Import-VIRole
         .SYNOPSIS
         Imports a vSphere role based on pre-defined configuration values
         .DESCRIPTION
-        The Import-VIRole cmdlet is used to parse through a list of pre-defined privilegess to create a new role. Often, this is to support a particular vendor's set of requirements for access into vSphere.
+        The Import-VIRole cmdlet is used to parse through a list of pre-defined privileges to create a new role. Often, this is to support a particular vendor's set of requirements for access into vSphere.
         .PARAMETER Name
         Name of the role. Only alpha and space characters are allowed.
         .PARAMETER RoleFile
@@ -19,7 +19,7 @@ function Import-VIRole
         Written by Chris Wahl for community usage
         Twitter: @ChrisWahl
         GitHub: chriswahl
-
+        
         Maintained by Rob Nelson and contributors.
         .LINK
         https://github.com/rnelson0/vCenter-roles/
@@ -31,9 +31,9 @@ function Import-VIRole
         [ValidateNotNullorEmpty()]
         [ValidatePattern('^[A-Za-z ]+$')] #Alpha and space only
         [String]$Name,
-        [Parameter(Mandatory = $true,Position = 1,HelpMessage = 'Path to the JSON file containing privilegess')]
+        [Parameter(Mandatory = $true,Position = 1,HelpMessage = 'Path to the JSON file describing the role')]
         [ValidateNotNullorEmpty()]
-        [Alias("Privilege")]
+        [Alias("Permission")]
         [String]$RoleFile,
         [Parameter(Mandatory = $true,Position = 2,HelpMessage = 'vCenter Server IP or FQDN')]
         [ValidateNotNullorEmpty()]
@@ -106,14 +106,14 @@ function Import-VIRole
             Throw 'Role already exists.'
         }
     
-        Write-Verbose -Message "Read the privilegess file '$RoleFile'"
+        Write-Verbose -Message "Read the role file '$RoleFile'"
         $null = Test-Path $RoleFile
         $JSONOutput = Get-Content -Path $RoleFile -Raw | ConvertFrom-Json 
         $RoleHash = @{}
         $JSONOutput | Get-Member -MemberType NoteProperty | Where-Object { -not [string]::IsNullOrEmpty($JSONOutput."$($_.name)")} | ForEach-Object {$RoleHash.add($_.name,$JSONOutput."$($_.name)")}
 
         Write-Verbose -Message "Found the following object in '$RoleFile':"
-       $RoleHash.Keys | % { 
+        $RoleHash.Keys | % { 
             $Key = $_
             $Value = $RoleHash.$Key
             if ($Key -ne "privileges") {

@@ -1,9 +1,16 @@
-﻿[
-    "Host.Config.AdvancedConfig",
-    "Host.Config.NetService",
-    "Host.Config.Network",
-    "Host.Config.Settings",
-    "System.Anonymous",
-    "System.Read",
-    "System.View"
-]
+﻿{
+	"product_description": "VMware Log Insight",
+	"product_version": "3.0",
+	"reference_url": "https://communities.vmware.com/people/cferber/blog/2015/11/19/minimum-vcenter-permissions-required-for-vrealize-operations-and-vrealize-loginsight",
+	"vendor": "VMware",
+	"vcenter_schema": "6.0",
+	"privileges": [
+		"Host.Config.AdvancedConfig",
+		"Host.Config.NetService",
+		"Host.Config.Network",
+		"Host.Config.Settings",
+		"System.Anonymous",
+		"System.Read",
+		"System.View"
+	]
+}

@@ -9,18 +9,18 @@ If necessary, roles can be removed with `Remove-VIRole` when connected to the ap
 
 # Included Roles:
 
-Find more details on the permissions sets [here](Roles Documentation.md).
+View the [Roles](Roles) directory for a list of provided roles.
 
 # Contributing:
 
 If you have a role you would like to see added to this repo, please open an [issue](https://github.com/rnelson0/vCenter-roles/issues) or [pull request](https://github.com/rnelson0/vCenter-roles/pulls) with the necessary details. You will need a number of items to describe the role:
 
-1. Description, the name of the product or use case the role is designed to be used with.
-1. Version, the version number of the product
-1. Reference URL, documentation of the product or use case and its required privileges.
-1. Vendor, or "N/A" if based on a common use case.
-1. vCenter Schema, the version of vCenter schema the privileges support
-1. Privileges, a list of all the VIPrivileges by ID, not by Name.
+1. Product Description: Name of the product or use case the role is designed to be used with.
+1. Product Version: Version number of the product, or "N/A" if describing a use case.
+1. Reference URL: Link to documentation of the product or use case and its required privileges.
+1. Vendor: Name of the vendor, or "N/A" if based on a common use case.
+1. vCenter Release: Major and Minor Version of vCenter the privileges support. (e.g '6.0' or '5.5')
+1. Privileges: A list of all the VIPrivileges, by ID, not by Name.
 
 If you do not have a list of privileges by ID, you can obtain the privilege IDs in a few ways. Launch PowerShell and connect to your vCenter server with `Connect-VIServer`, then use one or more of these methods:
 
@@ -35,7 +35,7 @@ Create a new JSON file with an array of these IDs, titled after the application/
 		"product_version": "N/A"
 		"reference_url": "https://example.com/sample_view-only_role.html",
 		"vendor": "N/A",
-		"vcenter_release": "6.0",
+		"vcenter_schema": "6.0",
 		"privileges": [
 			"System.Anonymous",
 			"System.View"
