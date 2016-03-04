@@ -1,6 +1,13 @@
-﻿[
-    "Extension.Register",
-    "Extension.Unregister",
-    "Extension.Update",
-    "Global.Licenses"
-]
+﻿{
+	"product_description": "VMware vRealize Operations Manager",
+	"product_version": "5.8",
+	"reference_url": "https://communities.vmware.com/people/cferber/blog/2015/11/19/minimum-vcenter-permissions-required-for-vrealize-operations-and-vrealize-loginsight",
+	"vendor": "VMware",
+	"vcenter_schema": "6.0",
+	"privileges": [
+        "Extension.Register",
+        "Extension.Unregister",
+        "Extension.Update",
+        "Global.Licenses"
+    ]
+}

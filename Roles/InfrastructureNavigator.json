@@ -1,4 +1,11 @@
-﻿[
-    'VirtualMachine.Interact.ConsoleInteract',
-    'VirtualMachine.Interact.GuestControl'
-]
+﻿{
+	"product_description": "VMware Infrastructure Navigator",
+	"product_version": "6.0",
+	"reference_url": "Unknown",
+	"vendor": "VMware",
+	"vcenter_schema": "6.0",
+	"privileges": [
+        "VirtualMachine.Interact.ConsoleInteract",
+        "VirtualMachine.Interact.GuestControl"
+    ]
+}

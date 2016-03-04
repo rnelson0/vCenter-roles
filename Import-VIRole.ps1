@@ -5,20 +5,22 @@ function Import-VIRole
         .SYNOPSIS
         Imports a vSphere role based on pre-defined configuration values
         .DESCRIPTION
-        The Import-VIRole cmdlet is used to parse through a list of pre-defined permissions to create a new role. Often, this is to support a particular vendor's set of requirements for access into vSphere.
+        The Import-VIRole cmdlet is used to parse through a list of pre-defined privileges to create a new role. Often, this is to support a particular vendor's set of requirements for access into vSphere.
         .PARAMETER Name
         Name of the role. Only alpha and space characters are allowed.
-        .PARAMETER Permission
-        Path to the JSON file containing permissions
+        .PARAMETER RoleFile
+        Path to the JSON file describing the role, including the privileges
         .PARAMETER vCenter
         vCenter Server IP or FQDN
         .EXAMPLE
-        Import-VIRole -Name Banana -PermissionsFile "C:\Banana.json" -vCenter VC1.FQDN
-        Creates a new role named Banana, using the permission list stored in Banana.json, and applies it to the VC1.FQDN vCenter Server
+        Import-VIRole -Name Banana -RoleFile "C:\Banana.json" -vCenter VC1.FQDN
+        Creates a new role named Banana, using the privileges list stored in Banana.json, and applies it to the VC1.FQDN vCenter Server
         .NOTES
         Written by Chris Wahl for community usage
         Twitter: @ChrisWahl
         GitHub: chriswahl
+        
+        Maintained by Rob Nelson and contributors.
         .LINK
         https://github.com/rnelson0/vCenter-roles/
     #>
@@ -29,10 +31,10 @@ function Import-VIRole
         [ValidateNotNullorEmpty()]
         [ValidatePattern('^[A-Za-z ]+$')] #Alpha and space only
         [String]$Name,
-        [Parameter(Mandatory = $true,Position = 1,HelpMessage = 'Path to the JSON file containing permissions')]
+        [Parameter(Mandatory = $true,Position = 1,HelpMessage = 'Path to the JSON file describing the role')]
         [ValidateNotNullorEmpty()]
         [Alias("Permission")]
-        [String]$PermissionsFile,
+        [String]$RoleFile,
         [Parameter(Mandatory = $true,Position = 2,HelpMessage = 'vCenter Server IP or FQDN')]
         [ValidateNotNullorEmpty()]
         [String]$vCenter,
@@ -104,34 +106,52 @@ function Import-VIRole
             Throw 'Role already exists.'
         }
     
-        Write-Verbose -Message "Read the permissions file '$PermissionsFile'"
-        $null = Test-Path $PermissionsFile
-        [array]$PermissionsArray = Get-Content -Path $PermissionsFile -Raw | ConvertFrom-Json
+        Write-Verbose -Message "Read the role file '$RoleFile'"
+        $null = Test-Path $RoleFile
+        $JSONOutput = Get-Content -Path $RoleFile -Raw | ConvertFrom-Json 
+        $RoleHash = @{}
+        $JSONOutput | Get-Member -MemberType NoteProperty | Where-Object { -not [string]::IsNullOrEmpty($JSONOutput."$($_.name)")} | ForEach-Object {$RoleHash.add($_.name,$JSONOutput."$($_.name)")}
 
+        Write-Verbose -Message "Found the following object in '$RoleFile':"
+        $RoleHash.Keys | % { 
+            $Key = $_
+            $Value = $RoleHash.$Key
+            if ($Key -ne "privileges") {
+                Write-Verbose "$Key : $Value"
+            }
+            else {
+                Write-Verbose "$key : ["
+                Foreach ($Privilege in $Value) {
+                    Write-Verbose "    $privilege,"
+                }
+                Write-Verbose "]"
+            }
+        }
 
-        Write-Verbose -Message 'Parse the permissions array for IDs'
-        $PermissionsList = Get-VIPrivilege -Id $PermissionsArray -ErrorVariable MissingPerm -ErrorAction SilentlyContinue
+        $PrivilegesArray = $RoleHash.privileges
+        Write-Verbose -Message 'Parse the privileges array for IDs'
+        $PrivilegesList = Get-VIPrivilege -Id $PrivilegesArray -ErrorVariable MissingPerm -ErrorAction SilentlyContinue
 
-        Write-Verbose -Message "Identify any permissions in the list that are not present on vCenter server '$vCenter'"
-        if ($MissingPermissions)
+        Write-Verbose -Message "Identify any privileges in the list that are not present on vCenter server '$vCenter'"
+        if ($MissingPrivileges)
         {
-            foreach ($MissingPermission in $MissingPermissions)
+            foreach ($MissingPrivilege in $MissingPrivileges)
             {
-                $PermissionID = ($MissingPermission.Exception.Message.Split("'"))[1]
-                Write-Warning -Message "Permission ID '$PermissionID' not found"
+                $PrivilegesID = ($MissingPrivilege.Exception.Message.Split("'"))[1]
+                Write-Warning -Message "Privilege ID '$PrivilegesID' not found"
             }
         }
 
         if ((! $RoleExists) -Or !$Overwrite)
         {
             Write-Verbose -Message "Create the role '$Name'"
-            New-VIRole -Name $Name | Set-VIRole -AddPrivilege $PermissionsList
+            New-VIRole -Name $Name | Set-VIRole -AddPrivilege $PrivilegesList
         }
         elseif ($RoleExists -And ($OverWrite)) 
         {
             Write-Verbose -Message "Overwrite the role '$Name'"
             Get-VIRole -Name $Name | Set-VIRole -RemovePrivilege *
-            Get-VIRole -Name $Name | Set-VIRole -AddPrivilege $PermissionsList
+            Get-VIRole -Name $Name | Set-VIRole -AddPrivilege $PrivilegesList
         }
     }
 }
