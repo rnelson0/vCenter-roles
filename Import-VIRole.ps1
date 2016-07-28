@@ -92,7 +92,7 @@ function Import-VIRole
         {
             if (($global:defaultViServer -eq $vCenter) -and (Get-VIRole)) {
               #Already Have a Valid connection
-              $fred = Get-VIRole
+              $null = Get-VIRole
             } 
             else
             {
