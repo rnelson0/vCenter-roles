@@ -43,7 +43,6 @@ function Import-VIRole
     )
 
     Process {
-
         Write-Verbose -Message 'Importing PowerCLI modules and snapins'
         $powercli = Get-PSSnapin -Name VMware.VimAutomation.Core -Registered
         Try 
@@ -88,11 +87,19 @@ function Import-VIRole
         $null = Set-PowerCLIConfiguration -InvalidCertificateAction Ignore -DisplayDeprecationWarnings:$false -Scope User -Confirm:$false
 
         Write-Verbose -Message "Connecting to vCenter server '$vCenter'"
+        
         Try 
         {
-            $null = Connect-VIServer -Server $vCenter -ErrorAction Stop -Session ($global:DefaultVIServers | Where-Object -FilterScript {
+            if (($global:defaultViServer -eq $vCenter) -and (Get-VIRole)) {
+              #Already Have a Valid connection
+              $null = Get-VIRole
+            } 
+            else
+            {
+                $null = Connect-VIServer -Server $vCenter -ErrorAction Stop -Session ($global:DefaultVIServers | Where-Object -FilterScript {
                     $_.name -eq $vCenter
-            }).sessionId
+                }).sessionId
+            }
         }
         Catch 
         {
