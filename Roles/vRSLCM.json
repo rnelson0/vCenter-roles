@@ -1,0 +1,21 @@
+﻿{
+	"product_description": "vRealize Suite LifeCycle Manager",
+	"product_version": "8.0",
+	"reference_url": "https://docs.vmware.com/en/VMware-vRealize-Suite-Lifecycle-Manager/8.0.1/com.vmware.vrsuite.lcm.8.0.1.doc/GUID-AC013263-7003-402E-9A22-83BFFC4E6CAE.html",
+	"vendor": "VMware",
+	"vcenter_schema": "6.7",
+	"privileges": [
+        "Datastore",
+        "Host.Local.InstallAgent",
+        "Host.Local.CreateVM",
+        "Host.Local.DeleteVM",
+        "Host.Local.ReconfigVM",
+        "Host.Inventory.EditCluster",
+        "Network.Assign",
+        "Resource.AssignVAppToPool",
+        "Resource.AssignVMToPool",
+        "VApp",
+        "VirtualMachine",
+        "ContentLibrary"
+    ]
+}
