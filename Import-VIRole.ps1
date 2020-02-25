@@ -2,26 +2,26 @@
 function Import-VIRole
 {
     <#  
-        .SYNOPSIS
+    .SYNOPSIS
         Imports a vSphere role based on pre-defined configuration values
-        .DESCRIPTION
+    .DESCRIPTION
         The Import-VIRole cmdlet is used to parse through a list of pre-defined privileges to create a new role. Often, this is to support a particular vendor's set of requirements for access into vSphere.
-        .PARAMETER Name
+    .PARAMETER Name
         Name of the role. Only alpha and space characters are allowed.
-        .PARAMETER RoleFile
+    .PARAMETER RoleFile
         Path to the JSON file describing the role, including the privileges
-        .PARAMETER vCenter
+    .PARAMETER vCenter
         vCenter Server IP or FQDN
-        .EXAMPLE
+    .EXAMPLE
         Import-VIRole -Name Banana -RoleFile "C:\Banana.json" -vCenter VC1.FQDN
         Creates a new role named Banana, using the privileges list stored in Banana.json, and applies it to the VC1.FQDN vCenter Server
-        .NOTES
+    .NOTES
         Written by Chris Wahl for community usage
         Twitter: @ChrisWahl
         GitHub: chriswahl
         
         Maintained by Rob Nelson and contributors.
-        .LINK
+    .LINK
         https://github.com/rnelson0/vCenter-roles/
     #>
 
@@ -31,45 +31,29 @@ function Import-VIRole
         [ValidateNotNullorEmpty()]
         [ValidatePattern('^[A-Za-z ]+$')] #Alpha and space only
         [String]$Name,
+
         [Parameter(Mandatory = $true,Position = 1,HelpMessage = 'Path to the JSON file describing the role')]
         [ValidateNotNullorEmpty()]
         [Alias("Permission")]
         [String]$RoleFile,
+
         [Parameter(Mandatory = $true,Position = 2,HelpMessage = 'vCenter Server IP or FQDN')]
         [ValidateNotNullorEmpty()]
         [String]$vCenter,
+
         [Parameter(Position = 3,HelpMessage = 'Overwrites existing Role by same name')]
         [Switch]$Overwrite=$false
     )
 
+    Begin {
+        Write-Verbose -Message "Detecting if PowerCLI is available"
+        $PowerCLI = Get-Module -ListAvailable VMware.PowerCLI
+        if (-not $PowerCLI) {
+            Throw 'The PowerCLI module must be installed to continue'
+        }
+    }
+
     Process {
-
-        Write-Verbose -Message 'Importing PowerCLI modules and snapins'
-        $powercli = Get-PSSnapin -Name VMware.VimAutomation.Core -Registered
-        Try 
-        {
-            Switch ($powercli.Version.Major) {
-                { $_ -ge 6 }
-                {
-                    Import-Module -Name VMware.VimAutomation.Core -ErrorAction Stop
-                    Write-Verbose -Message 'PowerCLI 6+ module imported'
-                }
-                5
-                {
-                    Add-PSSnapin -Name VMware.VimAutomation.Core -ErrorAction Stop
-                    Write-Warning -Message 'PowerCLI 5 snapin added; recommend upgrading your PowerCLI version'
-                }
-                default 
-                {
-                    Throw 'This script requires PowerCLI version 5 or later'
-                }
-            }
-        }
-        Catch 
-        {
-            Throw $_
-        }
-
         Write-Verbose -Message 'Allowing untrusted SSL certs'
         Add-Type -TypeDefinition @"
         using System.Net;
@@ -106,7 +90,7 @@ function Import-VIRole
             Throw 'Role already exists.'
         }
     
-        Write-Verbose -Message "Read the role file '$RoleFile'"
+        Write-Verbose -Message "Reading the role file '$RoleFile'"
         $null = Test-Path $RoleFile
         $JSONOutput = Get-Content -Path $RoleFile -Raw | ConvertFrom-Json 
         $RoleHash = @{}
@@ -129,10 +113,10 @@ function Import-VIRole
         }
 
         $PrivilegesArray = $RoleHash.privileges
-        Write-Verbose -Message 'Parse the privileges array for IDs'
+        Write-Verbose -Message 'Parsing the privileges array for IDs'
         $PrivilegesList = Get-VIPrivilege -Id $PrivilegesArray -ErrorVariable MissingPerm -ErrorAction SilentlyContinue
 
-        Write-Verbose -Message "Identify any privileges in the list that are not present on vCenter server '$vCenter'"
+        Write-Verbose -Message "Identifying any privileges in the list that are not present on vCenter server '$vCenter'"
         if ($MissingPrivileges)
         {
             foreach ($MissingPrivilege in $MissingPrivileges)
@@ -144,12 +128,12 @@ function Import-VIRole
 
         if ((! $RoleExists) -Or !$Overwrite)
         {
-            Write-Verbose -Message "Create the role '$Name'"
+            Write-Verbose -Message "Creating the role '$Name'"
             New-VIRole -Name $Name | Set-VIRole -AddPrivilege $PrivilegesList
         }
         elseif ($RoleExists -And ($OverWrite)) 
         {
-            Write-Verbose -Message "Overwrite the role '$Name'"
+            Write-Verbose -Message "Overwriting the role '$Name'"
             Get-VIRole -Name $Name | Set-VIRole -RemovePrivilege *
             Get-VIRole -Name $Name | Set-VIRole -AddPrivilege $PrivilegesList
         }
