@@ -114,7 +114,7 @@ function Import-VIRole
 
         $PrivilegesArray = $RoleHash.privileges
         Write-Verbose -Message 'Parsing the privileges array for IDs'
-        $PrivilegesList = Get-VIPrivilege -Id $PrivilegesArray -ErrorVariable MissingPerm -ErrorAction SilentlyContinue
+        $PrivilegesList = Get-VIPrivilege -Server $vCenter -Id $PrivilegesArray -ErrorVariable MissingPerm -ErrorAction SilentlyContinue
 
         Write-Verbose -Message "Identifying any privileges in the list that are not present on vCenter server '$vCenter'"
         if ($MissingPrivileges)
@@ -129,13 +129,16 @@ function Import-VIRole
         if ((! $RoleExists) -Or !$Overwrite)
         {
             Write-Verbose -Message "Creating the role '$Name'"
-            New-VIRole -Name $Name | Set-VIRole -AddPrivilege $PrivilegesList
+            $null = New-VIRole -Server $vCenter -Name $Name | Set-VIRole -Server $vCenter -AddPrivilege $PrivilegesList
         }
         elseif ($RoleExists -And ($OverWrite)) 
         {
             Write-Verbose -Message "Overwriting the role '$Name'"
-            Get-VIRole -Name $Name | Set-VIRole -RemovePrivilege *
-            Get-VIRole -Name $Name | Set-VIRole -AddPrivilege $PrivilegesList
+            $null = Get-VIRole -Server $vCenter -Name $Name | Set-VIRole -Server $vCenter -RemovePrivilege *
+            $null = Get-VIRole -Server $vCenter -Name $Name | Set-VIRole -Server $vCenter -AddPrivilege $PrivilegesList
         }
+
+        Write-Verbose -Message "Disconnecting from vCenter server '$vCenter'"
+        $null = Disconnect-VIServer -Server $vCenter -Confirm:$false
     }
 }
