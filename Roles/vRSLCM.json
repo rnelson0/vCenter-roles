@@ -5,7 +5,7 @@
 	"vendor": "VMware",
 	"vcenter_schema": "6.7",
 	"privileges": [
-        "Datastore",
+        "Datastore.*",
         "Host.Local.InstallAgent",
         "Host.Local.CreateVM",
         "Host.Local.DeleteVM",
@@ -14,8 +14,8 @@
         "Network.Assign",
         "Resource.AssignVAppToPool",
         "Resource.AssignVMToPool",
-        "VApp",
-        "VirtualMachine",
-        "ContentLibrary"
+        "VApp.*",
+        "VirtualMachine.*",
+        "ContentLibrary.*"
     ]
 }
