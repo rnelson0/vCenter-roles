@@ -124,6 +124,10 @@
     "InventoryService.Tagging.DeleteTag",
     "StorageProfile.View",
     "InventoryService.Tagging.EditCategory",
-    "InventoryService.Tagging.CreateCategory"
+    "InventoryService.Tagging.CreateCategory",
+    "Cryptographer.Clone",
+    "Cryptographer.EncryptNew",
+    "Cryptographer.Migrate",
+    "Cryptographer.RegisterVM"
   ]
 }
