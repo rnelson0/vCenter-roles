@@ -1,7 +1,6 @@
-﻿#requires -Version 3
-function Import-VIRole
-{
-    <#  
+#requires -Version 3
+function Import-VIRole {
+    <#
     .SYNOPSIS
         Imports a vSphere role based on pre-defined configuration values
     .DESCRIPTION
@@ -19,7 +18,7 @@ function Import-VIRole
         Written by Chris Wahl for community usage
         Twitter: @ChrisWahl
         GitHub: chriswahl
-        
+
         Maintained by Rob Nelson and contributors.
     .LINK
         https://github.com/rnelson0/vCenter-roles/
@@ -27,22 +26,22 @@ function Import-VIRole
 
     [CmdletBinding()]
     Param(
-        [Parameter(Mandatory = $true,Position = 0,HelpMessage = 'Name of the role')]
+        [Parameter(Mandatory = $true, Position = 0, HelpMessage = 'Name of the role')]
         [ValidateNotNullorEmpty()]
         [ValidatePattern('^[A-Za-z ]+$')] #Alpha and space only
         [String]$Name,
 
-        [Parameter(Mandatory = $true,Position = 1,HelpMessage = 'Path to the JSON file describing the role')]
+        [Parameter(Mandatory = $true, Position = 1, HelpMessage = 'Path to the JSON file describing the role')]
         [ValidateNotNullorEmpty()]
         [Alias("Permission")]
         [String]$RoleFile,
 
-        [Parameter(Mandatory = $true,Position = 2,HelpMessage = 'vCenter Server IP or FQDN')]
+        [Parameter(Mandatory = $true, Position = 2, HelpMessage = 'vCenter Server IP or FQDN')]
         [ValidateNotNullorEmpty()]
         [String]$vCenter,
 
-        [Parameter(Position = 3,HelpMessage = 'Overwrites existing Role by same name')]
-        [Switch]$Overwrite=$false
+        [Parameter(Position = 3, HelpMessage = 'Overwrites existing Role by same name')]
+        [Switch]$Overwrite = $false
     )
 
     Begin {
@@ -54,8 +53,10 @@ function Import-VIRole
     }
 
     Process {
-        Write-Verbose -Message 'Allowing untrusted SSL certs'
-        Add-Type -TypeDefinition @"
+        If ([System.Net.ServicePointManager]::CertificatePolicy -eq $null -or [System.Net.ServicePointManager]::CertificatePolicy.ToString() -ne "TrustAllCertsPolicy" -and
+            [System.Version]$PSVersionTable.PSVersion -lt [System.Version]"6.0.0") {
+            Write-Verbose -Message 'Allowing untrusted SSL certs'
+            Add-Type -TypeDefinition @"
         using System.Net;
         using System.Security.Cryptography.X509Certificates;
         public class TrustAllCertsPolicy : ICertificatePolicy {
@@ -66,38 +67,36 @@ function Import-VIRole
             }
         }
 "@
-        [System.Net.ServicePointManager]::CertificatePolicy = New-Object -TypeName TrustAllCertsPolicy
+            [System.Net.ServicePointManager]::CertificatePolicy = New-Object -TypeName TrustAllCertsPolicy
+        }
 
         Write-Verbose -Message "Ignoring self-signed SSL certificates for vCenter server '$vCenter' (optional)"
         $null = Set-PowerCLIConfiguration -InvalidCertificateAction Ignore -DisplayDeprecationWarnings:$false -Scope User -Confirm:$false
 
         Write-Verbose -Message "Connecting to vCenter server '$vCenter'"
-        Try 
-        {
+        Try {
             $null = Connect-VIServer -Server $vCenter -ErrorAction Stop -Session ($global:DefaultVIServers | Where-Object -FilterScript {
                     $_.name -eq $vCenter
-            }).sessionId
+                }).sessionId
         }
-        Catch 
-        {
+        Catch {
             Throw "Could not connect to vCenter server '$vCenter'"
         }
 
         Write-Verbose -Message "Check to see if role '$Name' exists"
         $RoleExists = Get-VIRole -Name $Name -Server $vCenter -ErrorAction SilentlyContinue
-        if ($RoleExists -And (! $Overwrite)) 
-        {
+        if ($RoleExists -And (! $Overwrite)) {
             Throw 'Role already exists.'
         }
-    
+
         Write-Verbose -Message "Reading the role file '$RoleFile'"
         $null = Test-Path $RoleFile
-        $JSONOutput = Get-Content -Path $RoleFile -Raw | ConvertFrom-Json 
+        $JSONOutput = Get-Content -Path $RoleFile -Raw | ConvertFrom-Json
         $RoleHash = @{}
-        $JSONOutput | Get-Member -MemberType NoteProperty | Where-Object { -not [string]::IsNullOrEmpty($JSONOutput."$($_.name)")} | ForEach-Object {$RoleHash.add($_.name,$JSONOutput."$($_.name)")}
+        $JSONOutput | Get-Member -MemberType NoteProperty | Where-Object { -not [string]::IsNullOrEmpty($JSONOutput."$($_.name)") } | ForEach-Object { $RoleHash.add($_.name, $JSONOutput."$($_.name)") }
 
         Write-Verbose -Message "Found the following object in '$RoleFile':"
-        $RoleHash.Keys | % { 
+        $RoleHash.Keys | ForEach-Object {
             $Key = $_
             $Value = $RoleHash.$Key
             if ($Key -ne "privileges") {
@@ -117,22 +116,18 @@ function Import-VIRole
         $PrivilegesList = Get-VIPrivilege -Server $vCenter -Id $PrivilegesArray -ErrorVariable MissingPerm -ErrorAction SilentlyContinue
 
         Write-Verbose -Message "Identifying any privileges in the list that are not present on vCenter server '$vCenter'"
-        if ($MissingPrivileges)
-        {
-            foreach ($MissingPrivilege in $MissingPrivileges)
-            {
+        if ($MissingPrivileges) {
+            foreach ($MissingPrivilege in $MissingPrivileges) {
                 $PrivilegesID = ($MissingPrivilege.Exception.Message.Split("'"))[1]
                 Write-Warning -Message "Privilege ID '$PrivilegesID' not found"
             }
         }
 
-        if ((! $RoleExists) -Or !$Overwrite)
-        {
+        if ((! $RoleExists) -Or !$Overwrite) {
             Write-Verbose -Message "Creating the role '$Name'"
             $null = New-VIRole -Server $vCenter -Name $Name | Set-VIRole -Server $vCenter -AddPrivilege $PrivilegesList
         }
-        elseif ($RoleExists -And ($OverWrite)) 
-        {
+        elseif ($RoleExists -And ($OverWrite)) {
             Write-Verbose -Message "Overwriting the role '$Name'"
             $null = Get-VIRole -Server $vCenter -Name $Name | Set-VIRole -Server $vCenter -RemovePrivilege *
             $null = Get-VIRole -Server $vCenter -Name $Name | Set-VIRole -Server $vCenter -AddPrivilege $PrivilegesList
