@@ -115,6 +115,7 @@
     "VApp.Import",
     "StoragePod.Config",
     "InventoryService.Tagging.AttachTag",
+    "InventoryService.Tagging.ObjectAttachable",
     "InventoryService.Tagging.ModifyUsedByForCategory",
     "InventoryService.Tagging.DeleteCategory",
     "VirtualMachine.Config.Unlock",
